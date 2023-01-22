@@ -50,8 +50,13 @@ public class LocalizationTest extends LinearOpMode {
                 intake.setArmMotorSpeed(0);
             }
             else intake.setArmMotorSpeed(gamepad2.left_stick_y);
-
-
+            // intake
+            if(gamepad2.left_bumper) {
+                intake.close();
+            }
+            else if(gamepad2.right_bumper) {
+                intake.open();
+            }
 
             drive.update();
 

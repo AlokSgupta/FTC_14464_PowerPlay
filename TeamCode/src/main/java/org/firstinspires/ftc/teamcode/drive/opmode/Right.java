@@ -1,11 +1,14 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.view.View;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -16,10 +19,26 @@ import org.firstinspires.ftc.teamcode.mechanism.RevControlHub;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
-@Autonomous(group = "drive")
+@Autonomous(group = "drive", name = "Right")
 public class Right extends LinearOpMode {
+    /*
+    YELLOW  = Parking Left
+    CYAN    = Parking Middle
+    MAGENTA = Parking Right
+     */
+
+    public enum ParkingPosition {
+        LEFT,
+        CENTER,
+        RIGHT
+    }
+
     private static final int ARM_TO_TOP_TIME = 2200;
     private static final int ARM_PARTWAY_UP_TIME = 350; //380;
+    private static final int PURPLE_MIN = 200;  // purple ~180-210-300
+    private static final int CYAN_MIN = 145;    // cyan ~188-197
+    // yellow ~75-150
+
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
@@ -29,17 +48,56 @@ public class Right extends LinearOpMode {
         RevControlHub intake = new RevControlHub();
         intake.init(hardwareMap);
 
+        double angle0 = Math.toRadians(27.5), angle1 = Math.toRadians(-56);
+        double distance = 13.4;
+        TrajectorySequence trajSeq0 = drive.trajectorySequenceBuilder(startPose)
+                .forward(distance)
+                .turn(-angle0)   // turn left
+                .forward(3.5)
+                .build();
+        TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPose)    // move to closest high junction
+                .back(3.5)
+                .turn(angle0 + Math.toRadians(3))    // turn left
+                .back(distance - 2)
+                .strafeLeft(27)
+                .forward(25)
+                .turn(-angle1)    // turn right
+                .build();
+        TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)
+                .forward(6.2)
+                .build();
+        TrajectorySequence trajSeq2a = drive.trajectorySequenceBuilder(startPose)
+                .back(5.5)
+                .turn(angle1)   // turn left
+                .build();
+        TrajectorySequence trajSeq3 = drive.trajectorySequenceBuilder(startPose)    // move to stack of cones
+                .forward(17)
+                .turn(-Math.toRadians(90))  // turn right
+                .build();
+        TrajectorySequence trajSeq3a = drive.trajectorySequenceBuilder(startPose)   // purple
+                .forward(37)
+                .build();
+        TrajectorySequence trajSeq3b = drive.trajectorySequenceBuilder(startPose)
+                .forward(6)
+                .build();
+        TrajectorySequence trajSeq4 = drive.trajectorySequenceBuilder(startPose)    // turn around
+                .back(5)
+                .turn(-Math.toRadians(-175))
+                .build();
+        TrajectorySequence trajSeq5 = drive.trajectorySequenceBuilder(startPose).forward(20).build();   // cyan
+        TrajectorySequence trajSeq6 = drive.trajectorySequenceBuilder(startPose).forward(5).build();
+
         // color sensor
         NormalizedColorSensor colorSensor;
         View relativeLayout;
-        float gain = 5;
+        float gain = 20;
         final float[] hsvValues = new float[3]; // {hue, saturation, value}
         colorSensor = hardwareMap.get(NormalizedColorSensor.class, "cs1");
         colorSensor.setGain(gain);
         if(colorSensor instanceof SwitchableLight)
             ((SwitchableLight)colorSensor).enableLight(true);
 
-        int zone = 1;
+        int zone = 3;
         while(!isStarted()) {
             NormalizedRGBA colors = colorSensor.getNormalizedColors();
             Color.colorToHSV(colors.toColor(), hsvValues);
@@ -52,62 +110,54 @@ public class Right extends LinearOpMode {
                     .addData("Saturation", "%.3f", hsvValues[1])
                     .addData("Value", "%.3f", hsvValues[2]);
             telemetry.addData("Alpha", "%.3f", colors.alpha);
-            /*  YELLOW: r=.025,g=.027,b=.027, h=180.000,s=.143,v=.027, a=.075
-                CYAN:   r=.027,g=.029,b=.029
-                PURPLE: r=.027,g=.028,b=.026
-             */
-            if(hsvValues[0] > 260) // purple ~330
+
+            if(hsvValues[0] > PURPLE_MIN)
                 zone = 3;
-            else if(hsvValues[0] > 130) // cyan ~180
+            else if(hsvValues[0] > CYAN_MIN)
                 zone = 2;
-            else // yellow ~80
+            else
                 zone = 1;
             telemetry.addData("Zone", zone);
+
+            telemetry.addData("Time", "%.3f", getRuntime());
             telemetry.update();
         }
 
-        double angle = Math.toRadians(58), angle2 = Math.toRadians(25);
-        TrajectorySequence trajSeq1 = drive.trajectorySequenceBuilder(startPose)    // move to closest high junction
-                .forward(3)
-                .strafeLeft(20)
-                .forward(24)
-                .turn(angle)    // turn left
-                .build();
-        TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)
-                .forward(7)
-                .build();
-        TrajectorySequence trajSeq2a = drive.trajectorySequenceBuilder(startPose)
-                .back(5)
-                .turn(-angle + .1)   // turn right
-                .build();
-        TrajectorySequence trajSeq3 = drive.trajectorySequenceBuilder(startPose)    // move to stack of cones
-                .forward(18)
-                .turn(Math.toRadians(-85))  // turn right
-                .build();
-        TrajectorySequence trajSeq3a = drive.trajectorySequenceBuilder(startPose)
-                .forward(35)
-                .build();
-        TrajectorySequence trajSeq3b = drive.trajectorySequenceBuilder(startPose)
-                .forward(6)
-                .build();
-        TrajectorySequence trajSeq4 = drive.trajectorySequenceBuilder(startPose)    // turn around
-                .back(5)
-                .turn(Math.toRadians(175))
-                .build();
-        // last trajSeq depends on signal
-        TrajectorySequence trajSeq5;
-        if(zone == 2)
-            trajSeq5 = drive.trajectorySequenceBuilder(startPose).forward(20).build();
-        else if (zone == 1)
-            trajSeq5 = drive.trajectorySequenceBuilder(startPose).forward(40).build();
-        else
-            trajSeq5 = drive.trajectorySequenceBuilder(startPose).back(2).build();
-
-        waitForStart();
+        //waitForStart();
 
         if(isStopRequested()) return;
 
+        double startTime = getRuntime();
+
         intake.close();
+
+        // move forward & color sense
+        drive.followTrajectorySequence(trajSeq0);
+        sleep(10);
+        // color sensor
+        do {
+            NormalizedRGBA colors = colorSensor.getNormalizedColors();
+            Color.colorToHSV(colors.toColor(), hsvValues);
+            telemetry.addLine()
+                    .addData("red", "%.3f", colors.red)
+                    .addData("green", "%.3f", colors.green)
+                    .addData("blue", "%.3f", colors.blue);
+            telemetry.addLine()
+                    .addData("Hue", "%.3f", hsvValues[0])
+                    .addData("Saturation", "%.3f", hsvValues[1])
+                    .addData("Value", "%.3f", hsvValues[2]);
+            telemetry.addData("Alpha", "%.3f", colors.alpha);
+            telemetry.addData("Time", "%.3f", getRuntime() - startTime);
+
+            if(hsvValues[0] > PURPLE_MIN)
+                zone = 3;
+            else if(hsvValues[0] > CYAN_MIN)
+                zone = 2;
+            else
+                zone = 1;
+            telemetry.addData("Zone", zone);
+            telemetry.update();
+        } while (opModeIsActive() && ((hsvValues[0] < 10 && (getRuntime() - startTime) < 12) || (getRuntime() - startTime) < 8));
 
         // move to closest high junction
         drive.followTrajectorySequence(trajSeq1);
@@ -116,24 +166,20 @@ public class Right extends LinearOpMode {
         drive.followTrajectorySequence(trajSeq2); // move forward slightly
         intake.open(); // drop cone
         drive.followTrajectorySequence(trajSeq2a); // move back a little, turn left
+        intake.close();
         armDown(intake, ARM_TO_TOP_TIME);    // move arm down
-        drive.followTrajectorySequence(trajSeq3);   // move forward and turn right
+        drive.followTrajectorySequence(trajSeq3);   // move forward and turn left
 
         // TODO: test this part
         if(zone == 3) {
-            // move to stack of cones
-            drive.followTrajectorySequence(trajSeq3a);
-            // pick up 2nd cone
-            armUp(intake, ARM_PARTWAY_UP_TIME); // move arm partway up
-            drive.followTrajectorySequence(trajSeq3b);  // move forward slightly
-            intake.close();
-        } else {
-            if(zone == 2) {
-                trajSeq5 = drive.trajectorySequenceBuilder(startPose).forward(20).build();
-                drive.followTrajectorySequence(trajSeq5);
-            }
-            drive.turn(Math.toRadians(-90)); // turn right
+            drive.followTrajectorySequence(trajSeq3a);  // move to stack of cones
+        } else if(zone == 2) {
+            drive.followTrajectorySequence(trajSeq5);
         }
+
+        drive.turn(Math.toRadians(-88)); // turn right
+        drive.followTrajectorySequence(trajSeq6);    // move forward a little
+        intake.open();
 
         //armUp(intake, ARM_TO_TOP_TIME - ARM_PARTWAY_UP_TIME); // move arm up
 

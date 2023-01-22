@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.view.View;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
@@ -19,8 +16,8 @@ import org.firstinspires.ftc.teamcode.mechanism.RevControlHub;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 @Config
-@Autonomous(group = "drive", name = "Left")
-public class LeftA extends LinearOpMode {
+@Autonomous(group = "drive", name = "Left Simple")
+public class LeftSimple extends LinearOpMode {
     /*
     YELLOW  = Parking Left
     CYAN    = Parking Middle
@@ -62,7 +59,7 @@ public class LeftA extends LinearOpMode {
                 //.strafeLeft(24) // debug
                 .strafeRight(30)
                 .forward(25)
-                .turn(-angle1)    // turn right
+                //.turn(-angle1)    // turn right
                 .build();
         TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)    // manuever over top of junction
                 .forward(8)
@@ -76,15 +73,16 @@ public class LeftA extends LinearOpMode {
                 .turn(Math.toRadians(85))  // turn left
                 .build();
         TrajectorySequence trajSeq3a = drive.trajectorySequenceBuilder(startPose) // purple
-                .forward(35)
+                .forward(37)
                 .build();
-        TrajectorySequence trajSeq3b = drive.trajectorySequenceBuilder(startPose)
+        TrajectorySequence trajSeq3b = drive.trajectorySequenceBuilder(startPose)   // unused
                 .forward(6)
                 .build();
-        TrajectorySequence trajSeq4 = drive.trajectorySequenceBuilder(startPose)    // turn around
+        TrajectorySequence trajSeq4 = drive.trajectorySequenceBuilder(startPose)    // turn around - unused
                 .back(5)
                 .turn(Math.toRadians(-175))
                 .build();
+
         TrajectorySequence trajSeq5 = drive.trajectorySequenceBuilder(startPose).forward(17).build(); // cyan
         TrajectorySequence trajSeq6 = drive.trajectorySequenceBuilder(startPose).forward(5).build();
 
@@ -148,7 +146,7 @@ public class LeftA extends LinearOpMode {
                     .addData("Saturation", "%.3f", hsvValues[1])
                     .addData("Value", "%.3f", hsvValues[2]);
             telemetry.addData("Alpha", "%.3f", colors.alpha);
-            telemetry.addData("Time", "%.3f", getRuntime());
+            telemetry.addData("Time", "%.3f", getRuntime() - startTime);
 
             if(hsvValues[0] > PURPLE_MIN)
                 zone = 3;
@@ -162,13 +160,13 @@ public class LeftA extends LinearOpMode {
 
         // move to closest high junction
         drive.followTrajectorySequence(trajSeq1);
-        // place 1st cone
-        armUp(intake, ARM_TO_TOP_TIME);   // move arm up
+        // DONT place 1st cone
+        /*armUp(intake, ARM_TO_TOP_TIME);   // move arm up
         drive.followTrajectorySequence(trajSeq2); // move forward slightly
         intake.open(); // drop cone
         drive.followTrajectorySequence(trajSeq2a); // move back a little, turn left
         intake.close();
-        armDown(intake, ARM_TO_TOP_TIME);    // move arm down
+        armDown(intake, ARM_TO_TOP_TIME);    // move arm down */
         drive.followTrajectorySequence(trajSeq3);   // move forward and turn left
 
         // TODO: test this part
@@ -179,9 +177,9 @@ public class LeftA extends LinearOpMode {
             drive.followTrajectorySequence(trajSeq5);
         }
 
-        drive.turn(Math.toRadians(92)); // turn left
+        drive.turn(Math.toRadians(90)); // turn left
         drive.followTrajectorySequence(trajSeq6);   // move forward a little
-        intake.open();
+        //intake.open();
 
         //armUp(intake, ARM_TO_TOP_TIME - ARM_PARTWAY_UP_TIME); // move arm up
 
