@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.SwitchableLight;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.mechanism.RevControlHub;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-
+@Disabled
 @Config
 @Autonomous(group = "drive", name = "Right")
 public class Right extends LinearOpMode {
@@ -48,7 +48,7 @@ public class Right extends LinearOpMode {
         RevControlHub intake = new RevControlHub();
         intake.init(hardwareMap);
 
-        double angle0 = Math.toRadians(27.5), angle1 = Math.toRadians(-56);
+        double angle0 = Math.toRadians(27.5), angle1 = Math.toRadians(-53);
         double distance = 13.4;
         TrajectorySequence trajSeq0 = drive.trajectorySequenceBuilder(startPose)
                 .forward(distance)
@@ -60,11 +60,11 @@ public class Right extends LinearOpMode {
                 .turn(angle0 + Math.toRadians(3))    // turn left
                 .back(distance - 2)
                 .strafeLeft(27)
-                .forward(25)
+                .forward(25) //!
                 .turn(-angle1)    // turn right
                 .build();
         TrajectorySequence trajSeq2 = drive.trajectorySequenceBuilder(startPose)
-                .forward(6.2)
+                .forward(5.3)
                 .build();
         TrajectorySequence trajSeq2a = drive.trajectorySequenceBuilder(startPose)
                 .back(5.5)

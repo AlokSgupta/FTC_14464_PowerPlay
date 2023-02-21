@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.mechanism.RevControlHub;
  * exercise is to ascertain whether the localizer has been configured properly (note: the pure
  * encoder localizer heading may be significantly off if the track width has not been tuned).
  */
-@TeleOp(group = "drive", name = "PowerPlay")
-public class LocalizationTest extends LinearOpMode {
+@TeleOp(group = "drive", name = "Showcase Tele")
+public class SimpleTele extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         // Set up drive train motors and its properties
@@ -28,9 +28,7 @@ public class LocalizationTest extends LinearOpMode {
         intake.init(hardwareMap);
 
         // Setting up motors to run without Encoders
-        intake.armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
 
         waitForStart();
 
@@ -39,57 +37,29 @@ public class LocalizationTest extends LinearOpMode {
             // Drive robot with game pad 1
             drive.setWeightedDrivePower(
                     new Pose2d(
-                            -(gamepad1.left_stick_y),
-                            -gamepad1.left_stick_x,
-                           -gamepad1.right_stick_x
+                            -.3 * (gamepad1.left_stick_y),
+                            -.3 * gamepad1.left_stick_x,
+                            -.3 * gamepad1.right_stick_x
                     )
             );
 
             // 4 stage git. run with gamepad 2
             // Setup motor speed to 0 if it is completely collasped and you are moving it further down.
-          ///  if(intake.getArmMotorRotations() < 5 && gamepad2.left_stick_y > 0)
-         //   {
-        //        intake.setArmMotorSpeed(0);
-        //    }
-          //  else
-                intake.setArmMotorSpeed(-gamepad2.left_stick_y);
+            if(intake.getArmMotorRotations() < 5 && gamepad1.left_trigger > 0)
+            {
+                intake.setArmMotorSpeed(0);
+            }
+            else {
+                intake.setArmMotorSpeed(gamepad1.left_trigger > 0 ? gamepad1.left_trigger : -gamepad1.right_trigger);
+            }
 
-            if (gamepad2.a)
-            {
-                if ((int)intake.getArmMotorRotations() <=1000) {
-                    intake.armRuntoPositionPositive(1000, 1.0);
-                }
-                else
-                {
-                    intake.armRuntoPositionNegative(1000, 1.0);
-                }
-            }
-            if (gamepad2.b)
-            {
-                if ((int)intake.getArmMotorRotations() <=2500) {
-                    intake.armRuntoPositionPositive(2500, 1.0);
-                }
-                else
-                {
-                    intake.armRuntoPositionNegative(2500, 1.0);
-                }
-            }
-            if (gamepad2.x)
-            {
-                if ((int)intake.getArmMotorRotations() <=4500) {
-                    intake.armRuntoPositionPositive(4500, 1.0);
-                }
-                else
-                {
-                    intake.armRuntoPositionNegative(4500, 1.0);
-                }
-            }
+
 
             // intake
-            if(gamepad2.left_bumper) {
+            if(gamepad1.left_bumper) {
                 intake.close();
             }
-            else if(gamepad2.right_bumper) {
+            else if(gamepad1.right_bumper) {
                 intake.open();
             }
 
@@ -100,8 +70,7 @@ public class LocalizationTest extends LinearOpMode {
             telemetry.addData("x", poseEstimate.getX());
             telemetry.addData("y", poseEstimate.getY());
             telemetry.addData("heading", poseEstimate.getHeading());
-            telemetry.addData("Rotation of Arm  Motor", (int)intake.getArmMotorRotations());
-            telemetry.addData("Rotation of Arm  Motor", (int)intake.armMotor.getPower());
+            telemetry.addData("Rotation of Arm  Motor", intake.getArmMotorRotations());
             telemetry.addData("Arm Y", gamepad2.left_stick_y);
             telemetry.update();
         }

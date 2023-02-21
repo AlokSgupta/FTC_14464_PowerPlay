@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.mechanism;
 
+import static java.lang.Thread.sleep;
+
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -7,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 public class RevControlHub {
-    private DcMotor armMotor;
+    public DcMotor armMotor;
     private Servo clampServo1;
     private Servo clampServo2;
     private double ticksPerRotation;
@@ -31,12 +33,46 @@ public class RevControlHub {
         return armMotor.getCurrentPosition();
     }
 
-    public void armRuntoPosition(int position, double power){
-        armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armMotor.setTargetPosition(position);
+    public void armRuntoPositionPositive(int position, double power){
+       // armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armMotor.setPower(power);
+        armMotor.setTargetPosition(position);
+        while(getArmMotorRotations() < position) {
+            armMotor.setPower(-power);
+        }
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armMotor.setPower(0);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void armRuntoPositionNegative(int position, double power){
+        // armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armMotor.setTargetPosition(position);
+        while(getArmMotorRotations() > position) {
+            armMotor.setPower(power);
+        }
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armMotor.setPower(0);
+        armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        // armMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+
+
+    public void armUp() {
+        setArmMotorSpeed(-1);
+    }
+
+    public void armDown() {
+        setArmMotorSpeed(1);
+    }
+
+    public void stopArm() {
+        setArmMotorSpeed(0);
     }
 
     public void setServo1Position (double postion){
@@ -53,7 +89,7 @@ public class RevControlHub {
     }
 
     public void close() {
-        clampServo1.setPosition(.3);
-        clampServo2.setPosition(.5);
+        clampServo1.setPosition(.35);
+        clampServo2.setPosition(.45);
     }
 }
